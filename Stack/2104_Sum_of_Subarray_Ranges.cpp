@@ -20,27 +20,47 @@ using namespace std;
 // minimum/maximum of using Previous and Next smaller/greater indexes.
 // Contribution = arr[i] * left_count * right_count
 //
+
+// ----------------------------------------------------------------
+// Why sumSubarrayMaxs - sumSubarrayMins works?
+//
+// We need: sum of (max - min) for every subarray
+//
+// Mathematically:
+// sum of (max - min) = sum of max - sum of min
+//
+// Example: subarrays = [1,2], [2,3], [1,2,3]
+// Direct:  (2-1) + (3-2) + (3-1) = 1 + 1 + 2 = 4
+// Split:   (2+3+3) - (1+2+1)     = 8 - 4      = 4  ✅
+//
+// So instead of iterating every subarray and finding max & min
+// separately (O(n²)), we calculate total contribution of each
+// element as a maximum and minimum across all subarrays — O(n).
+// ----------------------------------------------------------------
 // Why <= on one side?
 // To avoid double counting when equal elements exist.
 // For min: Left uses strict >=, Right uses strict >
-// For max: Left uses strict <=, Right uses strict 
+// For max: Left uses strict <=, Right uses strict
 // ----------------------------------------------------------------
 
-class Solution {
+class Solution
+{
 public:
-
     // ============================================================
     // Approach 1: Brute Force
     // Time Complexity  : O(n²) - nested loop
     // Space Complexity : O(1) - no extra space
     // ============================================================
-    long long subArrayRangesBrute(vector<int>& nums) {
+    long long subArrayRangesBrute(vector<int> &nums)
+    {
         int n = nums.size();
         long long sum = 0;
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             int minVal = nums[i], maxVal = nums[i];
-            for (int j = i; j < n; j++) {
+            for (int j = i; j < n; j++)
+            {
                 minVal = min(minVal, nums[j]);
                 maxVal = max(maxVal, nums[j]);
                 sum += maxVal - minVal;
@@ -56,8 +76,10 @@ public:
     // ============================================================
 
     // ---- Minimum Helpers ----
-    int prevMinHelper(stack<int>& st, vector<int>& arr, int index) {
-        while (!st.empty() && arr[st.top()] >= arr[index]) {
+    int prevMinHelper(stack<int> &st, vector<int> &arr, int index)
+    {
+        while (!st.empty() && arr[st.top()] >= arr[index])
+        {
             st.pop();
         }
         int ans = st.empty() ? -1 : st.top();
@@ -65,15 +87,19 @@ public:
         return ans;
     }
 
-    void prevMinElementIndex(vector<int>& pme, vector<int>& arr) {
+    void prevMinElementIndex(vector<int> &pme, vector<int> &arr)
+    {
         stack<int> st;
-        for (int i = 0; i < arr.size(); i++) {
+        for (int i = 0; i < arr.size(); i++)
+        {
             pme[i] = prevMinHelper(st, arr, i);
         }
     }
 
-    int nextMinEqualHelper(stack<int>& st, vector<int>& arr, int index) {
-        while (!st.empty() && arr[st.top()] > arr[index]) {
+    int nextMinEqualHelper(stack<int> &st, vector<int> &arr, int index)
+    {
+        while (!st.empty() && arr[st.top()] > arr[index])
+        {
             st.pop();
         }
         int ans = st.empty() ? arr.size() : st.top();
@@ -81,29 +107,35 @@ public:
         return ans;
     }
 
-    void nextMinEqualElementIndex(vector<int>& nmee, vector<int>& arr) {
+    void nextMinEqualElementIndex(vector<int> &nmee, vector<int> &arr)
+    {
         stack<int> st;
-        for (int i = arr.size() - 1; i >= 0; i--) {
+        for (int i = arr.size() - 1; i >= 0; i--)
+        {
             nmee[i] = nextMinEqualHelper(st, arr, i);
         }
     }
 
-    long long sumSubarrayMins(vector<int>& arr) {
+    long long sumSubarrayMins(vector<int> &arr)
+    {
         int n = arr.size();
         vector<int> pme(n);
         vector<int> nmee(n);
         prevMinElementIndex(pme, arr);
         nextMinEqualElementIndex(nmee, arr);
         long long sum = 0;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             sum += (long long)arr[i] * (i - pme[i]) * (nmee[i] - i);
         }
         return sum;
     }
 
     // ---- Maximum Helpers ----
-    int prevMaxHelper(stack<int>& st, vector<int>& arr, int index) {
-        while (!st.empty() && arr[st.top()] <= arr[index]) {
+    int prevMaxHelper(stack<int> &st, vector<int> &arr, int index)
+    {
+        while (!st.empty() && arr[st.top()] <= arr[index])
+        {
             st.pop();
         }
         int ans = st.empty() ? -1 : st.top();
@@ -111,15 +143,19 @@ public:
         return ans;
     }
 
-    void prevMaxElementIndex(vector<int>& ple, vector<int>& arr) {
+    void prevMaxElementIndex(vector<int> &ple, vector<int> &arr)
+    {
         stack<int> st;
-        for (int i = 0; i < arr.size(); i++) {
+        for (int i = 0; i < arr.size(); i++)
+        {
             ple[i] = prevMaxHelper(st, arr, i);
         }
     }
 
-    int nextMaxEqualHelper(stack<int>& st, vector<int>& arr, int index) {
-        while (!st.empty() && arr[st.top()] < arr[index]) {
+    int nextMaxEqualHelper(stack<int> &st, vector<int> &arr, int index)
+    {
+        while (!st.empty() && arr[st.top()] < arr[index])
+        {
             st.pop();
         }
         int ans = st.empty() ? arr.size() : st.top();
@@ -127,27 +163,32 @@ public:
         return ans;
     }
 
-    void nextMaxEqualElementIndex(vector<int>& nlee, vector<int>& arr) {
+    void nextMaxEqualElementIndex(vector<int> &nlee, vector<int> &arr)
+    {
         stack<int> st;
-        for (int i = arr.size() - 1; i >= 0; i--) {
+        for (int i = arr.size() - 1; i >= 0; i--)
+        {
             nlee[i] = nextMaxEqualHelper(st, arr, i);
         }
     }
 
-    long long sumSubarrayMaxs(vector<int>& arr) {
+    long long sumSubarrayMaxs(vector<int> &arr)
+    {
         int n = arr.size();
         vector<int> ple(n);
         vector<int> nlee(n);
         prevMaxElementIndex(ple, arr);
         nextMaxEqualElementIndex(nlee, arr);
         long long sum = 0;
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             sum += (long long)arr[i] * (i - ple[i]) * (nlee[i] - i);
         }
         return sum;
     }
 
-    long long subArrayRanges(vector<int>& nums) {
+    long long subArrayRanges(vector<int> &nums)
+    {
         return sumSubarrayMaxs(nums) - sumSubarrayMins(nums);
     }
 };
@@ -155,7 +196,8 @@ public:
 // ============================================================
 // Main - Local Testing
 // ============================================================
-int main() {
+int main()
+{
     Solution sol;
 
     vector<int> nums1 = {1, 2, 3};
