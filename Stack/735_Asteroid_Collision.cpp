@@ -26,7 +26,7 @@ public:
     // ============================================================
     // Helper: Handle single asteroid collision with stack
     // ============================================================
-    void helper(stack<int>& st, int val) {
+    void helper1(stack<int>& st, int val) {
         if (val > 0) {
             st.push(val);
             return;
@@ -61,16 +61,59 @@ public:
     // Time Complexity  : O(n) - each asteroid pushed/popped once
     // Space Complexity : O(n) - stack size
     // ============================================================
-    vector<int> asteroidCollision(vector<int>& ast) {
+    vector<int> asteroidCollision1(vector<int>& ast) {
         stack<int> st;
         vector<int> ans;
+
+        for (int i = 0; i < ast.size(); i++) {
+            helper1(st, ast[i]);
+        }
+
+        stackToVector(st, ans);
+        return ans;
+    }
+
+
+
+    // Key Trick:
+    // Use vector as stack — push right moving asteroids (+).
+    // When left moving asteroid (-) comes, compare with stack top.
+    // Keep popping until no more collisions possible.
+    // Using vector instead of stack avoids extra conversion step.
+    // ----------------------------------------------------------------
+
+    void helper(vector<int>& st, int val) {
+        if (val > 0) {
+            st.push_back(val);
+            return;
+        }
+        // val is negative — check collisions with right moving asteroids
+        while (!st.empty() && st.back() > 0) {
+            if (abs(val) > st.back()) {
+                st.pop_back();       // right asteroid explodes, continue
+            } else if (abs(val) == st.back()) {
+                st.pop_back();       // both explode
+                return;
+            } else {
+                return;              // left asteroid explodes
+            }
+        }
+        st.push_back(val);           // no more collisions
+    }
+
+    // ============================================================
+    // Approach: Vector as Stack
+    // Time Complexity  : O(n) - each asteroid pushed/popped once
+    // Space Complexity : O(n) - vector size
+    // ============================================================
+    vector<int> asteroidCollision(vector<int>& ast) {
+        vector<int> st;
 
         for (int i = 0; i < ast.size(); i++) {
             helper(st, ast[i]);
         }
 
-        stackToVector(st, ans);
-        return ans;
+        return st;
     }
 };
 
