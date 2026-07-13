@@ -2,164 +2,134 @@
 using namespace std;
 
 // ================================================================
-// Problem  : Maximum Subarray
+// Problem  : 53. Maximum Subarray (Kadane's Algorithm)
 // Link     : https://leetcode.com/problems/maximum-subarray/
 // Author   : Usman
 // ================================================================
 
 // ----------------------------------------------------------------
 // Problem Summary:
-// Given an integer array nums, find the contiguous subarray
-// with the largest sum and return its sum.
+// Find the subarray with the largest sum and return its sum.
+//
+// Key Trick — Kadane's Algorithm:
+// Keep running sum. If sum drops below 0 — reset to 0 (discard).
+// Track maximum sum seen so far.
+//
+// Why reset at 0?
+// Negative prefix only hurts future subarrays — better to start fresh!
 //
 // Example:
-// nums = [-2,1,-3,4,-1,2,1,-5,4]
-//
-// Maximum Sum Subarray:
-// [4,-1,2,1]
-//
-// Answer = 6
+// nums = [2,3,5,-2,7,-4]
+// i=0: sum=2,  maxi=2
+// i=1: sum=5,  maxi=5
+// i=2: sum=10, maxi=10
+// i=3: sum=8,  maxi=10
+// i=4: sum=15, maxi=15
+// i=5: sum=11, maxi=15
+// Answer: 15 ✅
 // ----------------------------------------------------------------
 
 class Solution {
 public:
 
     // ============================================================
-    // Approach 1: Brute Force
-    // Time Complexity  : O(n²)
+    // Approach 1: Brute Force — Nested Loop
+    // Time Complexity  : O(n^2) - check all subarrays
     // Space Complexity : O(1)
-    //
-    // Generate every possible subarray and calculate its sum.
-    // Update the maximum sum whenever a larger sum is found.
     // ============================================================
     int maxSubArrayBrute(vector<int>& nums) {
-
-        int maxSum = INT_MIN;
-
+        int maxi = INT_MIN;
         for (int i = 0; i < nums.size(); i++) {
-
             int sum = 0;
-
             for (int j = i; j < nums.size(); j++) {
-
                 sum += nums[j];
-                maxSum = max(maxSum, sum);
+                maxi = max(maxi, sum);
             }
         }
-
-        return maxSum;
+        return maxi;
     }
 
     // ============================================================
-    // Approach 2: Dynamic Programming (Kadane DP Array)
-    // Time Complexity  : O(n)
-    // Space Complexity : O(n)
-    //
-    // dp[i] stores the maximum subarray sum ending at index i.
-    //
-    // Transition:
-    // dp[i] = max(nums[i], dp[i-1] + nums[i])
-    //
-    // The answer is the maximum value in the dp array.
+    // Approach 2: Kadane's Algorithm — Sum Only
+    // Time Complexity  : O(n) - single pass
+    // Space Complexity : O(1)
     // ============================================================
-    int maxSubArrayDP(vector<int>& nums) {
+    int maxSubArraySum(vector<int>& nums) {
+        int sum = 0;
+        int maxi = INT_MIN;
 
-        vector<int> dp(nums.size());
-
-        dp[0] = nums[0];
-        int maxSum = dp[0];
-
-        for (int i = 1; i < nums.size(); i++) {
-
-            dp[i] = max(nums[i], dp[i - 1] + nums[i]);
-            maxSum = max(maxSum, dp[i]);
+        for (int i = 0; i < nums.size(); i++) {
+            sum += nums[i];
+            maxi = max(maxi, sum);
+            if (sum < 0) sum = 0;  // reset — negative prefix useless
         }
-
-        return maxSum;
+        return maxi;
     }
 
     // ============================================================
-    // Approach 3: Kadane's Algorithm (Optimal)
-    // Time Complexity  : O(n)
+    // Approach 3: Kadane's Algorithm — Sum + Print Subarray
+    // Time Complexity  : O(n) - single pass
     // Space Complexity : O(1)
     //
-    // Key Idea:
-    //
-    // Maintain:
-    // sum    -> Current subarray sum
-    // maxSum -> Maximum sum found so far
-    //
-    // If current sum becomes negative,
-    // discard it and start a new subarray.
-    //
-    // Why?
-    // A negative sum can only decrease the sum
-    // of any future subarray.
-    //
-    // Example:
-    //
-    // nums = [-2,1,-3,4,-1,2,1,-5,4]
-    //
-    // i   num   sum   maxSum
-    // ------------------------
-    // 0   -2    -2      -2
-    //          reset sum = 0
-    //
-    // 1    1     1       1
-    // 2   -3    -2       1
-    //          reset sum = 0
-    //
-    // 3    4     4       4
-    // 4   -1     3       4
-    // 5    2     5       5
-    // 6    1     6       6
-    // 7   -5     1       6
-    // 8    4     5       6
-    //
-    // Final Answer = 6
+    // Extra: Track start and end indexes of max subarray.
+    // When sum resets to 0 — new start begins at next index.
+    // When new max found — update arrStart and arrEnd.
     // ============================================================
     int maxSubArray(vector<int>& nums) {
+        int start    = 0;
+        int arrStart = 0;
+        int arrEnd   = 0;
+        int sum      = 0;
+        int maxi     = INT_MIN;
 
-        int sum = 0;
-        int maxSum = INT_MIN;
+        for (int i = 0; i < nums.size(); i++) {
+            if (sum == 0) start = i;  // new subarray starts here
 
-        for (int num : nums) {
+            sum += nums[i];
 
-            sum += num;
+            if (maxi < sum) {
+                maxi     = sum;
+                arrStart = start;
+                arrEnd   = i;
+            }
 
-            maxSum = max(maxSum, sum);
-
-            if (sum < 0)
-                sum = 0;
+            if (sum < 0) sum = 0;  // reset
         }
 
-        return maxSum;
+        // Print subarray
+        cout << "Max Subarray: [";
+        for (int i = arrStart; i <= arrEnd; i++) {
+            cout << nums[i];
+            if (i != arrEnd) cout << ", ";
+        }
+        cout << "]" << endl;
+        cout << "Indexes: [" << arrStart << ", " << arrEnd << "]" << endl;
+
+        return maxi;
     }
 };
 
 // ============================================================
 // Main - Local Testing
 // ============================================================
-
 int main() {
-
     Solution sol;
 
-    vector<int> nums1 = {-2,1,-3,4,-1,2,1,-5,4};
+    vector<int> nums1 = {2, 3, 5, -2, 7, -4};
     cout << "Test 1: " << sol.maxSubArray(nums1) << endl;
-    // Expected: 6
+    // Expected: 15, subarray [2,3,5,-2,7]
 
-    vector<int> nums2 = {1};
+    cout << endl;
+
+    vector<int> nums2 = {-2, -3, -7, -2, -10, -4};
     cout << "Test 2: " << sol.maxSubArray(nums2) << endl;
-    // Expected: 1
+    // Expected: -2
 
-    vector<int> nums3 = {5,4,-1,7,8};
+    cout << endl;
+
+    vector<int> nums3 = {-1, 2, 3, -1, 2, -6, 5};
     cout << "Test 3: " << sol.maxSubArray(nums3) << endl;
-    // Expected: 23
-
-    vector<int> nums4 = {-5,-2,-8,-1};
-    cout << "Test 4: " << sol.maxSubArray(nums4) << endl;
-    // Expected: -1
+    // Expected: 6, subarray [2,3,-1,2]
 
     return 0;
 }
